@@ -7,7 +7,6 @@ from sub_pages.manage_user import admin_page
 from sub_pages.contact import display_about_us
 import pandas as pd
 import streamlit as st
-import streamlit_cookies_manager
 
 
 
