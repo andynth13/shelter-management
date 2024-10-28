@@ -2,5 +2,5 @@ python-dotenv
 nest_asyncio
 streamlit
 sqlalchemy
-psycopg2
+psycopg2-binary
 streamlit_option_menu
