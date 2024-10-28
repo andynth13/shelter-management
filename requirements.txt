@@ -1,0 +1,6 @@
+python-dotenv
+nest_asyncio
+streamlit
+sqlalchemy
+psycopg2
+streamlit_option_menu
