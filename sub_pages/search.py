@@ -2,23 +2,30 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
+from streamlit_option_menu import option_menu
+from utils.custom_menu import streamlit_menu
 
 # Load shelter data
-shelter_data = pd.read_csv('./data/complete_shelter_details7f.csv')
+shelter_data = pd.read_csv('./data/complete_shelter_details_new.csv')
 
 # Streamlit App
-def main():
+def search_page():
+    
     st.title("Emergency Shelter Finder")
 
-    # Search by location
-    location = st.text_input('Enter a location (e.g., New Westminster, Kamloops)')
+    # Search options
+    search_option = st.radio("Search by:", ["Location", "Service Provider"], horizontal=True, key= '111')
+    if search_option == "Location":
+        search_input = st.text_input("Enter a location (e.g., New Westminster, Kamloops)")
+    else:
+        search_input = st.text_input("Enter a Service Provider (e.g., RainCity Housing)")
 
     # Choose view: List View or Map View
-    view_option = st.radio("Choose View", ['List View', 'Map View'])
+    view_option = st.radio("Choose View", ['List View', 'Map View'], key= '112')
 
     # Filter results based on search
     if st.button('Search'):
-        results = filter_shelters(location)
+        results = filter_shelters(search_option, search_input)
         if len(results) > 0:
             if view_option == 'List View':
                 show_list_view(results)
@@ -27,44 +34,61 @@ def main():
         else:
             st.write("No shelters found with the selected criteria.")
 
-# Filter shelters based on location
-def filter_shelters(location):
+# Filter shelters based on location or service provider
+def filter_shelters(search_option, search_input):
     filtered_data = shelter_data
-    if location:
-        filtered_data = filtered_data[filtered_data['Address'].str.contains(location, case=False, na=False)]
+    if search_option == "Location" and search_input:
+        filtered_data = filtered_data[filtered_data['Address'].str.contains(search_input, case=False, na=False)]
+    elif search_option == "Service Provider" and search_input:
+        filtered_data = filtered_data[filtered_data['Service Provider'].str.contains(search_input, case=False, na=False)]
     return filtered_data
 
-# Show the results in List View
+# Show the results in List View with toggle functionality
 def show_list_view(results):
     st.subheader(f"Found {len(results)} shelters")
     
     for index, row in results.iterrows():
-        with st.expander(f"**{row['Shelter Name']}**", expanded=True):  # Expand each shelter's section
-            # Create two columns: Left for description, Right for contact details
-            col1, col2 = st.columns([2, 1])  # Left (description) is wider than right (contacts)
+        # Check session state for the current shelter's expanded state
+        is_expanded = st.session_state.get(f"expanded_{index}", False)
+
+        # Create two columns: Left for main info, Right for contact details
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            # Display the shelter name and provider
+            st.markdown(f"**{row['Shelter Name']}**")
+            st.markdown(f"**Provided by:** {row['Service Provider']}")
             
-            # Left column: Description and Google Maps link
-            with col1:
-                st.markdown(f"<h3><b>{row['Shelter Name']}</b></h3>", unsafe_allow_html=True)  # Shelter name in bold, larger font
-                st.write(f"**Description:** {row['ResultCard Description']}")
-                st.markdown(f"[Open in Google Maps](https://www.google.com/maps/search/?api=1&query={row['Map Link']})")  # Only the map link
+            # Show short description when collapsed, full description when expanded
+            if is_expanded:
+                st.write(row['ResultCard Description Full'])
+            else:
+                st.write(row['ResultCard Description'])
             
-            # Right column: Contact details (Website, Address, Phone, Email)
-            with col2:
-                st.markdown("### Website")
-                st.write(f"[{row['Website']}]({row['Website']})")
-                
-                st.markdown("### Address")
-                st.write(f"{row['Address']}")
-                
+            # Google Maps link
+            st.markdown(f"[Open in Google Maps]({row['Google Directions Link']})")
+            
+            # Toggle button for expanding/collapsing
+            if st.button("Less" if is_expanded else "More", key=f"toggle_{index}"):
+                st.session_state[f"expanded_{index}"] = not is_expanded
+
+        with col2:
+            st.markdown("### Website")
+            st.write(f"[{row['Website']}]({row['Website']})")
+            
+            st.markdown("### Address")
+            st.write(row['Address'])
+
+            # Contact details (only show in expanded mode)
+            if is_expanded:
                 st.markdown("### Contact")
                 st.write(f"Phone 1: {row['Phone 1']}")
                 if pd.notna(row['Phone 2']):
                     st.write(f"Phone 2: {row['Phone 2']}")
                 if pd.notna(row['Email']):
                     st.write(f"Email: {row['Email']}")
-                
-            st.markdown("---")  # Divider between shelters
+
+        st.markdown("---")  # Divider between shelters
 
 # Show the results in Map View
 def show_map_view(results):
@@ -77,12 +101,11 @@ def show_map_view(results):
     # Add shelter locations to the map
     for index, row in results.iterrows():
         folium.Marker(
-            location=[row['Latitude'], row['Longitude']],  # You can adjust these columns if needed
+            location=[row['Latitude'], row['Longitude']],
             popup=f"<b>{row['Shelter Name']}</b><br>{row['Address']}<br><a href='{row['Website']}'>Website</a>"
         ).add_to(m)
 
     # Display the map in Streamlit
     st_folium(m, width=700)
 
-if __name__ == "__main__":
-    main()
+
