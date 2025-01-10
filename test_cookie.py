@@ -27,5 +27,7 @@ with c2:
 with c3:
     st.subheader("Delete Cookie:")
     cookie = st.text_input("Cookie", key="2")
+    cookie2 = st.text_input("Cookie2", key="3")
     if st.button("Delete"):
-        cookie_manager.delete(cookie)
+        cookie_manager.delete(cookie, key = "4")
+        cookie_manager.delete(cookie2, key = "5")

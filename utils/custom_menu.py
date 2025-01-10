@@ -48,3 +48,15 @@ def streamlit_menu(option=1):
             },
         )
         return selected
+    
+    if option == 10:
+        # 1. as sidebar menu
+        with st.sidebar:
+            selected = option_menu(
+                menu_title="Admin Menu",  # required
+                options=["Create", "Read", "Update", "Delete"],  # required
+                icons=["plus-circle", "book", "pencil-square","trash"],  # optional
+                menu_icon="cast",  # optional
+                default_index=0,  # optional
+            )
+        return selected

@@ -12,12 +12,12 @@ from sub_pages.admin import admin_page
 from streamlit_option_menu import option_menu
 import pandas as pd
 import streamlit as st
-# import extra_streamlit_components as stx
-from streamlit_cookies_controller import CookieController
+import extra_streamlit_components as stx
 
 # Initialize the CookieManager
-# cookie_name = st.secrets['COOKIE_NAME']
-cookie_manager = CookieController(key='cookies')
+def get_manager():
+    return stx.CookieManager()
+cookie_manager = get_manager()
 
 # Set up session states
 if "is_logged_in" not in st.session_state:
@@ -44,17 +44,10 @@ def display_shelters():
 
 # Display login form and set session state for user roles
 def login_form():
-    placeholder = st.empty()
-    placeholder.title("Login")
-    
-    
-    with placeholder.form("login"):
-        st.markdown("#### Enter your credentials:")
-        username  = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submit = st.form_submit_button("Login")
-
-    if submit:
+    st.title("Login")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
         user_info = login_user(username, password)
         if user_info:
 
@@ -62,19 +55,12 @@ def login_form():
             st.session_state.role = user_info["role_name"]
             st.session_state.username = user_info["username"]
 
-            # cookie_manager.set('is_logged_in', True, key= "0")
-            # cookie_manager.set('username', user_info["username"], key= "1")
-            # cookie_manager.set('role', user_info["role_name"], key= "2")
-
-            cookie_manager.set('is_logged_in', True,)
-            cookie_manager.set('username', user_info["username"])
-            cookie_manager.set('role', user_info["role_name"])
+            cookie_manager.set('is_logged_in', True, key= "0")
+            cookie_manager.set('username', user_info["username"], key= "1")
+            cookie_manager.set('role', user_info["role_name"], key= "2")
 
             st.session_state.refresh_page = True  # Trigger a "refresh"
-            placeholder.empty()
-            st.button("Logout", on_click=logout)
             st.success(f"Welcome, {user_info['username']}! You are logged in as {user_info['role_name']}.")
-            manage_page()
         else:
             st.error("Invalid username or password.")
 
@@ -87,20 +73,10 @@ def logout():
     st.session_state.username = None
 
     print(f"before delete:{cookie_manager.get('is_logged_in')}")
-    # cookie_manager.delete('is_logged_in', key= "0")
-    # cookie_manager.delete('username',  key= "1")
-    # cookie_manager.delete('role', key="2")
-
-    cookie_manager.remove('is_logged_in')
-    time.sleep(0.2)
-    cookie_manager.remove('username')
-    time.sleep(0.2)
-    cookie_manager.remove('role')
-    time.sleep(0.2)
-
+    cookie_manager.delete('is_logged_in', key= "0")
+    cookie_manager.delete('username',  key= "1")
+    cookie_manager.delete('role', key="2")
     print(f"after delete:{cookie_manager.get('is_logged_in')}")
-    print(f"after delete:{cookie_manager.get('username')}")
-    print(f"after delete:{cookie_manager.get('role')}")
 
     st.session_state.refresh_page = True  # Reload the page to reset session
 
@@ -120,37 +96,11 @@ def main():
         st.rerun()
     
  
-    st.markdown("""
-    <style>
-    .title-container {
-        background-color: #fafafa;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-    }
-    .title-text {
-        font-size: 36px;
-        font-weight: bold;
-        color: #333;
-    }
-    .subtitle-text {
-        font-size: 18px;
-        color: #666;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Display the title with custom styling
-    st.markdown("""
-        <div class="title-container">
-            <div class="title-text">Shelter Management</div>
-        </div>
-        """, unsafe_allow_html=True)
-
+    st.title("Shelter Management")
     selected = streamlit_menu(option=2)
     
     if selected == "Home":
-        time.sleep(0.5)
+        time.sleep(0.3)
         search_page()
     if selected == "Manage":
         if st.session_state.is_logged_in:
@@ -166,11 +116,11 @@ def main():
 
 # Run the app
 if __name__ == "__main__":
+    
+    # Update session from cookies at the start of each session
+    main()
     if cookie_manager.get('is_logged_in'):
         st.session_state.is_logged_in = True
         st.session_state.role = cookie_manager.get("role")
         st.session_state.username = cookie_manager.get("username")
-    # Update session from cookies at the start of each session
-    main()
-    
     

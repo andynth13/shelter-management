@@ -4,3 +4,5 @@ streamlit
 sqlalchemy
 psycopg2-binary
 streamlit_option_menu
+extra-streamlit-components
+streamlit_folium
