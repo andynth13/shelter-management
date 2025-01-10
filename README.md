@@ -25,4 +25,25 @@ This project is a web-based platform designed to enhance accessibility to shelte
 - **Tools**: Docker (for deployment)  
 
 ---
-## Screenshot FrontEnd
+## Screenshot
+![Frontend](image/Frontend.png)
+
+- Search function by keywords (with fuzzymatching 80% to cover the case when the word is not exactly match because people forget the name, typo, etc...)
+- Search filter by distance to where user is at, and by number of bed required
+- Real time update with key information of the shelters for easy and faster contact
+
+
+![Backend](image/backend.png)
+- Authorized Managers can access and edit bed availability and shelter information
+- Real time update to front end interface
+
+---
+## Contributors
+
+- [Huan LV](https://github.com/huanlv-git) - Project Lead  
+- [Anthony Nguyen](https://github.com/realanguyen96) - Backend Feature Development  / Bug Fixes
+- [Andy Nguyen](https://github.com/another-contributor) - Frontend Feature Development  / Design
+- [Dawn Dang](https://github.com/contributor-username) - Frontend Feature Development  / Design
+- [Divyanshu Fialok](https://github.com/another-contributor) - Backend Feature Development  / Bug Fixes
+
+
